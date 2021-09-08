@@ -1,4 +1,4 @@
-package casts 
+package casts
 
 import (
 	"github.com/spf13/cast"
@@ -84,4 +84,3 @@ func StringSliceDefault(i interface{}, di []string) []string {
 	}
 	return val
 }
-

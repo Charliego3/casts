@@ -1,4 +1,4 @@
-package casts 
+package casts
 
 import (
 	"github.com/spf13/cast"
@@ -260,4 +260,3 @@ func Uint8Default(i interface{}, di uint8) uint8 {
 	}
 	return val
 }
-
