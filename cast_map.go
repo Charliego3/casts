@@ -1,77 +1,99 @@
 package casts
 
-import (
-	"github.com/spf13/cast"
-)
+import "github.com/spf13/cast"
 
-func StringMap(i interface{}) map[string]interface{} {
+func MustMap(i any) map[string]any {
 	return cast.ToStringMap(i)
 }
 
-func StringMapDefault(i interface{}, di map[string]interface{}) map[string]interface{} {
-	val, err := cast.ToStringMapE(i)
-	if err != nil {
-		return di
-	}
-	return val
+func Map(i any) (map[string]any, error) {
+	return cast.ToStringMapE(i)
 }
 
-func StringMapBool(i interface{}) map[string]bool {
+func MapDefault(i any, dv map[string]any) map[string]any {
+	v, err := cast.ToStringMapE(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustMapBool(i any) map[string]bool {
 	return cast.ToStringMapBool(i)
 }
 
-func StringMapBoolDefault(i interface{}, di map[string]bool) map[string]bool {
-	val, err := cast.ToStringMapBoolE(i)
-	if err != nil {
-		return di
-	}
-	return val
+func MapBool(i any) (map[string]bool, error) {
+	return cast.ToStringMapBoolE(i)
 }
 
-func StringMapInt(i interface{}) map[string]int {
+func MapBoolDefault(i any, dv map[string]bool) map[string]bool {
+	v, err := cast.ToStringMapBoolE(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustMapInt(i any) map[string]int {
 	return cast.ToStringMapInt(i)
 }
 
-func StringMapIntDefault(i interface{}, di map[string]int) map[string]int {
-	val, err := cast.ToStringMapIntE(i)
-	if err != nil {
-		return di
-	}
-	return val
+func MapInt(i any) (map[string]int, error) {
+	return cast.ToStringMapIntE(i)
 }
 
-func StringMapInt64(i interface{}) map[string]int64 {
+func MapIntDefault(i any, dv map[string]int) map[string]int {
+	v, err := cast.ToStringMapIntE(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustMapInt64(i any) map[string]int64 {
 	return cast.ToStringMapInt64(i)
 }
 
-func StringMapInt64Default(i interface{}, di map[string]int64) map[string]int64 {
-	val, err := cast.ToStringMapInt64E(i)
-	if err != nil {
-		return di
-	}
-	return val
+func MapInt64(i any) (map[string]int64, error) {
+	return cast.ToStringMapInt64E(i)
 }
 
-func StringMapString(i interface{}) map[string]string {
+func MapInt64Default(i any, dv map[string]int64) map[string]int64 {
+	v, err := cast.ToStringMapInt64E(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustMapString(i any) map[string]string {
 	return cast.ToStringMapString(i)
 }
 
-func StringMapStringDefault(i interface{}, di map[string]string) map[string]string {
-	val, err := cast.ToStringMapStringE(i)
-	if err != nil {
-		return di
-	}
-	return val
+func MapString(i any) (map[string]string, error) {
+	return cast.ToStringMapStringE(i)
 }
 
-func StringMapStringSlice(i interface{}) map[string][]string {
+func MapStringDefault(i any, dv map[string]string) map[string]string {
+	v, err := cast.ToStringMapStringE(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustMapStringSlice(i any) map[string][]string {
 	return cast.ToStringMapStringSlice(i)
 }
 
-func StringMapStringSliceDefault(i interface{}, di map[string][]string) map[string][]string {
-	val, err := cast.ToStringMapStringSliceE(i)
+func MapStringSlice(i any) (map[string][]string, error) {
+	return cast.ToStringMapStringSliceE(i)
+}
+
+func MapStringSliceDefault(i any, dv map[string][]string) map[string][]string {
+	v, err := cast.ToStringMapStringSliceE(i)
 	if err != nil {
-		return di
+		return dv
 	}
-	return val
+	return v
 }

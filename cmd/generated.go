@@ -1,183 +1,146 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
-
-type cast struct {
-	alias       string
-	types       string
-	slice       bool
-	isMap       bool
-	onlySlice   bool
-	appendSlice bool
-}
-
-type imp struct {
-	url   string
-	slice bool
-	maps  bool
-	cast  bool
-}
 
 const (
-	mustTemplate = `func Must%s%s(i interface{}) %s {
-	return cast.To%s%s(i)
-}%s
-`
-	typeTemplate = `func %s%s(i interface{}) (%s, error) {
-	return cast.To%s%sE(i)
-}%s
-`
-	defaultTemplate = `func %s%sDefault(i interface{}, di %s) %s {
-	val, err := cast.To%s%sE(i)
+	context        = "return cast.To%s(i)"
+	contextE       = "return cast.To%sE(i)"
+	contextDefault = `v, err := cast.To%sE(i)
 	if err != nil {
-		return di
+		return dv
 	}
-	return val
-}%s
-`
-	mustMapTemplate = `func StringMap%s(i interface{}) map[string]%s {
-	return cast.ToStringMap%s(i)
-}%s
-`
+	return v`
 
-	defaultMapTemplate = `func StringMap%sDefault(i interface{}, di map[string]%s) map[string]%s {
-	val, err := cast.ToStringMap%sE(i)
-	if err != nil {
-		return di
-	}
-	return val
-}%s
-`
-
-	castFileName  = "cast.go"
-	castSliceName = "cast_slice.go"
-	castMapName   = "cast_map.go"
+	fnt = `func %s(i any%s) %s {
+	%s
+}`
 )
 
-var (
-	files   = make(map[string]*os.File)
-	imports = []imp{
-		{url: "github.com/spf13/cast", slice: true, maps: true, cast: true},
-		{url: "time", slice: true, maps: false, cast: true},
-	}
-)
+type Template struct {
+	f       *os.File
+	imports []string
+	fns     []fn
+	prefix  string
+}
+
+type fn struct {
+	name    string
+	cast    string
+	types   string
+	options []option
+}
+
+type option struct {
+	prefix  string
+	suffix  string
+	rt      string
+	context string
+}
 
 func main() {
-	allType := []cast{
-		{"bool", "bool", true, false, false, true},
-		{"duration", "time.Duration", true, false, false, true},
-		{"float32", "float32", false, false, false, true},
-		{"float64", "float64", false, false, false, true},
-		{"int16", "int16", false, false, false, true},
-		{"int32", "int32", false, false, false, true},
-		{"int64", "int64", false, false, false, true},
-		{"int8", "int8", false, false, false, true},
-		{"int", "int", true, false, false, true},
-		{"slice", "interface{}", true, false, true, false},
-		{"string", "string", true, false, false, true},
-		{"time", "time.Time", false, false, false, false},
-		{"uint", "uint", false, false, false, false},
-		{"uint16", "uint16", false, false, false, false},
-		{"uint32", "uint32", false, false, false, false},
-		{"uint64", "uint64", false, false, false, false},
-		{"uint8", "uint8", false, false, false, false},
-
-		{"", "interface{}", false, true, false, false},
-		{"bool", "bool", false, true, false, false},
-		{"int", "int", false, true, false, false},
-		{"int64", "int64", false, true, false, false},
-		{"string", "string", false, true, false, false},
-		{"stringSlice", "[]string", false, true, false, false},
+	dos := []option{
+		{"Must", "", "", context},
+		{"", "", "(%s, error)", contextE},
+		{"", "Default", "", contextDefault},
 	}
 
-	execute(allType)
-}
+	ts := []Template{
+		{f: openFile("cast.go"), imports: []string{
+			"github.com/spf13/cast",
+			"time",
+		}, fns: []fn{
+			{"Bool", "Bool", "bool", dos},
+			{"Duration", "Duration", "time.Duration", dos},
+			{"Float32", "Float32", "float32", dos},
+			{"Float64", "Float64", "float64", dos},
+			{"Int", "Int", "int", dos},
+			{"Int8", "Int8", "int8", dos},
+			{"Int16", "Int16", "int16", dos},
+			{"Int32", "Int32", "int32", dos},
+			{"Int64", "Int64", "int64", dos},
+			{"String", "String", "string", dos},
+			{"Uint", "Uint", "uint", dos},
+			{"Uint8", "Uint8", "uint8", dos},
+			{"Uint16", "Uint16", "uint16", dos},
+			{"Uint32", "Uint32", "uint32", dos},
+			{"Uint64", "Uint64", "uint64", dos},
+			{"Time", "Time", "time.Time", dos},
+		}},
 
-func execute(casts []cast) {
-	castFile := getFile(castFileName)
-	sliceFile := getFile(castSliceName)
-	mapFile := getFile(castMapName)
-	defer func() {
-		_ = castFile.Close()
-		_ = sliceFile.Close()
-		_ = mapFile.Close()
-	}()
+		{f: openFile("cast_slice.go"), imports: []string{
+			"github.com/spf13/cast",
+			"time",
+		}, fns: []fn{
+			{"Slice", "Slice", "[]any", dos},
+			{"SliceInt", "IntSlice", "[]int", dos},
+			{"SliceBool", "BoolSlice", "[]bool", dos},
+			{"SliceString", "StringSlice", "[]string", dos},
+			{"SliceDuration", "DurationSlice", "[]time.Duration", dos},
+		}},
 
-	writeHeader(castFile)
-	writeHeader(sliceFile)
-	writeHeader(mapFile)
+		{f: openFile("cast_map.go"), imports: []string{
+			"github.com/spf13/cast",
+		}, prefix: "StringMap", fns: []fn{
+			{"Map", "", "map[string]any", dos},
+			{"MapBool", "Bool", "map[string]bool", dos},
+			{"MapInt", "Int", "map[string]int", dos},
+			{"MapInt64", "Int64", "map[string]int64", dos},
+			{"MapString", "String", "map[string]string", dos},
+			{"MapStringSlice", "StringSlice", "map[string][]string", dos},
+		}},
+	}
 
-	for _, c := range casts {
-		var title, slice, types, line string
-		title = strings.Title(c.alias)
-		types = c.types
-		line = "\n"
+	ph := "package casts\n\n"
+	for _, t := range ts {
+		content := bufio.NewWriter(t.f)
+		_, _ = content.WriteString(ph)
 
-		if c.isMap {
-			writeFile(mapFile, mustMapTemplate, title, types, title, line)
-			writeFile(mapFile, defaultMapTemplate, title, types, types, title, line)
-			continue
+		il := len(t.imports)
+		if il > 0 {
+			_, _ = content.WriteString("import ")
+		}
+		if il > 1 {
+			_, _ = content.WriteString("(\n")
 		}
 
-		if !c.onlySlice {
-			writeFile(castFile, mustTemplate, title, slice, types, title, slice, line)
-			writeFile(castFile, typeTemplate, title, slice, types, title, slice, line)
-			writeFile(castFile, defaultTemplate, title, slice, types, types, title, slice, line)
-		}
-
-		if c.slice {
-			types = "[]" + types
-			if c.appendSlice {
-				slice = "Slice"
+		for i, im := range t.imports {
+			if i > 0 {
+				_ = content.WriteByte('\n')
 			}
-			writeFile(sliceFile, mustTemplate, title, slice, types, title, slice, line)
-			writeFile(sliceFile, typeTemplate, title, slice, types, title, slice, line)
-			writeFile(sliceFile, defaultTemplate, title, slice, types, types, title, slice, line)
+			_, _ = content.WriteString(fmt.Sprintf("\t%q", im))
+		}
+
+		if il > 1 {
+			_, _ = content.WriteString("\n)")
+		}
+
+		for _, f := range t.fns {
+			for _, o := range f.options {
+				_, _ = content.WriteString("\n\n")
+				name := o.prefix + f.name + o.suffix
+				df := ""
+				if o.suffix == "Default" {
+					df = ", dv " + f.types
+				}
+				rt := f.types
+				if len(o.rt) > 0 {
+					rt = fmt.Sprintf(o.rt, f.types)
+				}
+
+				c := fmt.Sprintf(o.context, t.prefix+f.cast)
+				_, _ = content.WriteString(fmt.Sprintf(fnt, name, df, rt, c))
+			}
+		}
+
+		err := content.Flush()
+		if err != nil {
+			panic(err)
 		}
 	}
-}
-
-func writeFile(file *os.File, format string, args ...interface{}) {
-	_, err := fmt.Fprintf(file, format, args...)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func writeHeader(file *os.File) {
-	headers := "package casts \n\n"
-	headers += "import (\n"
-
-	println(file.Name())
-
-	for _, s := range imports {
-		write := file.Name() == castFileName && s.cast
-		write = (file.Name() == castSliceName && s.slice) || write
-		write = (file.Name() == castMapName && s.maps) || write
-
-		if write {
-			headers += fmt.Sprintf("\t%q\n", s.url)
-		}
-	}
-
-	headers += ")\n\n"
-	_, err := fmt.Fprintf(file, headers)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func getFile(filename string) *os.File {
-	if file, ok := files[filename]; ok {
-		return file
-	}
-	file := openFile(filename)
-	files[filename] = file
-	return file
 }
 
 func openFile(fn string) *os.File {

@@ -5,82 +5,82 @@ import (
 	"time"
 )
 
-func MustBoolSlice(i interface{}) []bool {
-	return cast.ToBoolSlice(i)
-}
-
-func BoolSlice(i interface{}) ([]bool, error) {
-	return cast.ToBoolSliceE(i)
-}
-
-func BoolSliceDefault(i interface{}, di []bool) []bool {
-	val, err := cast.ToBoolSliceE(i)
-	if err != nil {
-		return di
-	}
-	return val
-}
-
-func MustDurationSlice(i interface{}) []time.Duration {
-	return cast.ToDurationSlice(i)
-}
-
-func DurationSlice(i interface{}) ([]time.Duration, error) {
-	return cast.ToDurationSliceE(i)
-}
-
-func DurationSliceDefault(i interface{}, di []time.Duration) []time.Duration {
-	val, err := cast.ToDurationSliceE(i)
-	if err != nil {
-		return di
-	}
-	return val
-}
-
-func MustIntSlice(i interface{}) []int {
-	return cast.ToIntSlice(i)
-}
-
-func IntSlice(i interface{}) ([]int, error) {
-	return cast.ToIntSliceE(i)
-}
-
-func IntSliceDefault(i interface{}, di []int) []int {
-	val, err := cast.ToIntSliceE(i)
-	if err != nil {
-		return di
-	}
-	return val
-}
-
-func MustSlice(i interface{}) []interface{} {
+func MustSlice(i any) []any {
 	return cast.ToSlice(i)
 }
 
-func Slice(i interface{}) ([]interface{}, error) {
+func Slice(i any) ([]any, error) {
 	return cast.ToSliceE(i)
 }
 
-func SliceDefault(i interface{}, di []interface{}) []interface{} {
-	val, err := cast.ToSliceE(i)
+func SliceDefault(i any, dv []any) []any {
+	v, err := cast.ToSliceE(i)
 	if err != nil {
-		return di
+		return dv
 	}
-	return val
+	return v
 }
 
-func MustStringSlice(i interface{}) []string {
+func MustSliceInt(i any) []int {
+	return cast.ToIntSlice(i)
+}
+
+func SliceInt(i any) ([]int, error) {
+	return cast.ToIntSliceE(i)
+}
+
+func SliceIntDefault(i any, dv []int) []int {
+	v, err := cast.ToIntSliceE(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustSliceBool(i any) []bool {
+	return cast.ToBoolSlice(i)
+}
+
+func SliceBool(i any) ([]bool, error) {
+	return cast.ToBoolSliceE(i)
+}
+
+func SliceBoolDefault(i any, dv []bool) []bool {
+	v, err := cast.ToBoolSliceE(i)
+	if err != nil {
+		return dv
+	}
+	return v
+}
+
+func MustSliceString(i any) []string {
 	return cast.ToStringSlice(i)
 }
 
-func StringSlice(i interface{}) ([]string, error) {
+func SliceString(i any) ([]string, error) {
 	return cast.ToStringSliceE(i)
 }
 
-func StringSliceDefault(i interface{}, di []string) []string {
-	val, err := cast.ToStringSliceE(i)
+func SliceStringDefault(i any, dv []string) []string {
+	v, err := cast.ToStringSliceE(i)
 	if err != nil {
-		return di
+		return dv
 	}
-	return val
+	return v
+}
+
+func MustSliceDuration(i any) []time.Duration {
+	return cast.ToDurationSlice(i)
+}
+
+func SliceDuration(i any) ([]time.Duration, error) {
+	return cast.ToDurationSliceE(i)
+}
+
+func SliceDurationDefault(i any, dv []time.Duration) []time.Duration {
+	v, err := cast.ToDurationSliceE(i)
+	if err != nil {
+		return dv
+	}
+	return v
 }
