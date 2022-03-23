@@ -1,4 +1,4 @@
-module github.com/whimthen/casts
+module github.com/Charliego93/casts
 
 go 1.18
 
